@@ -1,0 +1,92 @@
+#Batch load csv
+./bin/neo4j-admin import --mode=csv --database=testing.db --delimiter ";" --array-delimiter "|" --id-type INTEGER --nodes:book "/Users/testing/Desktop/output_/output_book_header.csv,/Users/testing/Desktop/output_/output_book.csv" --nodes:article "/Users/testing/Desktop/output_/output_article_header.csv,/Users/testing/Desktop/output_/output_article.csv" --nodes:inproceedings "/Users/testing/Desktop/output_/output_inproceedings_header.csv,/Users/testing/Desktop/output_/output_inproceedings.csv" --nodes:mastersthesis "/Users/testing/Desktop/output_/output_mastersthesis_header.csv,/Users/testing/Desktop/output_/output_mastersthesis.csv" --nodes:www "/Users/testing/Desktop/output_/output_www_header.csv,/Users/testing/Desktop/output_/output_www.csv" --nodes:phdthesis "/Users/testing/Desktop/output_/output_phdthesis_header.csv,/Users/testing/Desktop/output_/output_phdthesis.csv" --nodes:proceedings "/Users/testing/Desktop/output_/output_proceedings_header.csv,/Users/testing/Desktop/output_/output_proceedings.csv" --nodes:incollection "/Users/testing/Desktop/output_/output_incollection_header.csv,/Users/testing/Desktop/output_/output_incollection.csv" --nodes:journal "/Users/testing/Desktop/output_/output_journal.csv" --relationships:published_in "/Users/testing/Desktop/output_/output_journal_published_in.csv" --nodes:author "/Users/testing/Desktop/output_/output_author.csv" --relationships:authored_by "/Users/testing/Desktop/output_/output_author_authored_by.csv" --nodes:publisher "/Users/testing/Desktop/output_/output_publisher.csv" --relationships:published_by "/Users/testing/Desktop/output_/output_publisher_published_by.csv" --nodes:editor "/Users/testing/Desktop/output_/output_editor.csv" --relationships:edited_by "/Users/testing/Desktop/output_/output_editor_edited_by.csv" --nodes:school "/Users/testing/Desktop/output_/output_school.csv" --relationships:submitted_at "/Users/testing/Desktop/output_/output_school_submitted_at.csv" --nodes:cite "/Users/testing/Desktop/output_/output_cite.csv" --relationships:has_citation "/Users/testing/Desktop/output_/output_cite_has_citation.csv"
+
+#Create 'Citation' edge between Articles
+MATCH (a1:article)-[:has_citation]->(c1:cite),(a2:article{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (aa1:inproceedings)-[:has_citation]->(c1:cite),(aa2:article{key:c1.cite})
+CREATE (aa1)-[cc2:citing]->(aa2)
+
+MATCH (a1:book)-[:has_citation]->(c1:cite),(a2:article{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (a1:proceedings)-[:has_citation]->(c1:cite),(a2:article{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (a1:incollection)-[:has_citation]->(c1:cite),(a2:article{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+#Create 'Citation' edge between inproceedings
+# It is assumed that articles and inproceedings are different publication type. and therefore, we create citation for each nodes.
+MATCH (a1:article)-[:has_citation]->(c1:cite), (a2:inproceedings{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (a1:inproceedings)-[:has_citation]->(c1:cite),(a2:inproceedings{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (a1:book)-[:has_citation]->(c1:cite),(a2:inproceedings{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (a1:proceedings)-[:has_citation]->(c1:cite),(a2:inproceedings{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (a1:incollection)-[:has_citation]->(c1:cite),(a2:inproceedings{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+
+#Create 'containing' edge between inproceedings & Proceeding
+# Duplicate the cited 'inproceedings'
+MATCH ()-[:citing]->(p:inproceedings)
+WITH p AS map
+CREATE (copy:confarticle)
+SET copy=map
+RETURN copy
+
+#Create 'citing' again
+MATCH (a1:article)-[:has_citation]->(c1:cite), (a2:confarticle{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (a1:inproceedings)-[:has_citation]->(c1:cite),(a2:confarticle{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (a1:book)-[:has_citation]->(c1:cite),(a2:confarticle{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (a1:proceedings)-[:has_citation]->(c1:cite),(a2:confarticle{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+MATCH (a1:incollection)-[:has_citation]->(c1:cite),(a2:confarticle{key:c1.cite})
+CREATE (a1)-[c2:citing]->(a2)
+
+#Drop the uncited 'inproceedings' for quick operation
+call apoc.periodic.commit("
+match (p:inproceedings)
+with p limit {limit}
+detach delete p
+return count(*)
+",{limit:10000})
+
+#Create relationship
+match (a:proceedings)
+with a.booktitle as title
+with distinct title as Title
+create (:conference{booktitle:Title})
+
+call apoc.periodic.iterate("
+match (a:proceedings), (b:conference)
+where a.booktitle = b.booktitle return a,b",
+"create (a)<-[:contains{volume:a.volume, year:a.year}]-(b)",
+{batchSize:10000, parallel:false})
+
+call apoc.periodic.iterate("
+match (b:confarticle), (a:conference)
+where a.booktitle = b.booktitle RETURN a,b",
+"create (a)<-[:published_in]-(b)",
+{batchSize:10000, parallel:false})
+
+call apoc.periodic.iterate("
+match (b:confarticle), (a:author)
+where a.author in b.author RETURN a,b",
+"create (a)<-[:authored_by]-(b)",
+{batchSize:10000, parallel:false})
