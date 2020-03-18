@@ -8,3 +8,8 @@ WITH confTitle, a.author AS reviewers ORDER BY number
 WITH confTitle, collect(reviewers)[..3] as reviewer
 MATCH (paper:inproceedings{booktitle:confTitle})
 SET paper.reviewer=reviewer
+
+\\Assign university for authors (random)
+LOAD CSV WITH HEADERS FROM 'file:///world_university.csv' AS ROW
+MATCH (a:Author {id:row.id})
+SET a.affiliation = ROW.university
