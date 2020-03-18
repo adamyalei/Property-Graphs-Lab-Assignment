@@ -93,29 +93,29 @@ Calling “page rank. stream” with Cypher project in two nodes, we get the res
 
 Testing result:
 
-![PRresult1](TestingResult/Page Rank results1.png)
+![PRresult1](TestingResult/Page_Rank_results1.png)
 
-'''
+```
 CALL algo.pageRank.stream(
   'MATCH (b:book) WHERE exists( (b)-[:submitted_at]-() ) RETURN id(b) as id',
   'MATCH (b:book)-[:submitted_at]-(s:school) RETURN id(b) as source, id(s) as target',
   {graph:'cypher'}
 ) YIELD nodeId,score with algo.asNode(nodeId) as node, score order by score desc limit 10
 RETURN node.book, score
-'''
+```
 
 Also, calling “alog.pageRank” function with the same nodes and relationship. iterations, loadMillis, computeMillis, writeMillis, dampingFactor, write and writeProperty shows the detail configuration and result of page rank algorithm.
 
 Testing result:
 
-![PRresult2](TestingResult/Page Rank results2.png)
+![PRresult2](TestingResult/Page_Rank_results2.png)
 
-'''
+```
 CALL algo.pageRank(
   'MATCH (p:book) RETURN id(p) as id',
   'MATCH (p1:book)-[:submitted_at]->(p2:school) RETURN id(p1) as source, id(p2) as target',
   {graph:'cypher', iterations:1, write: true});
-'''
+```
 
 ### 3 Betweenness Centrality Algorithm
 It is one of the measures for the centrality of the network graph based on the shortest path. For a fully connected network graph, where any two nodes have at least one shortest path, in a weightless network graph, the shortest path is the sum of the number of edges that the path contains, and in a weighted network graph, the shortest path is the weight of the path containing edges. Sum. The median centrality of each node is the number of times these shortest paths pass through the node. Betweenness Centrality has a wide range of applications in network theory: it represents the degree of interaction between a node and other nodes. For example, in a communication network, a node with higher median centrality has stronger control capabilities in the network, because more information will pass through the node when it is passed. 
@@ -123,26 +123,26 @@ Needless to say, using the same nodes and relationships can identify the differe
 
 Testing result:
 
-![BCresult1](TestingResult/Betweenness Centrality result1.png)
+![BCresult1](TestingResult/Betweenness_Centrality_result1.png)
 
-'''
+```
 CALL algo.betweenness.stream( 'school','',{direction:'out'})
 YIELD nodeId, centrality
 MATCH (school:school) WHERE id(school) = nodeId
 RETURN school.school AS schoolname,centrality
 ORDER BY centrality DESC;
-'''
+```
 
 Figure below shows that the details results of algorithm.
 
 Testing result:
 
-![BCresult2](TestingResult/Betweenness Centrality result2.png)
+![BCresult2](TestingResult/Betweenness_Centrality_result2.png)
 
-'''
+```
 CALL algo.betweenness('school','', {direction:'out',write:true, writeProperty:'centrality'})
 YIELD nodes, minCentrality, maxCentrality, sumCentrality, loadMillis, computeMillis, writeMillis;
-'''
+```
 
 ## D Recommender
 
