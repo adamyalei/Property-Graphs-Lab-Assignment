@@ -79,6 +79,12 @@ Testing result:
 
 ## C Graph algorithms
 
+### 1 Case Description
+In order to realize the function of the page rank algorithm, based on the lowest level sub-graph can not only know the details of algorithms more clearly but also reduce the running time of large amounts of the dataset. So, paying attention to specific node and relationship with less amount is a good approach thus “book” and “school” node as well as “submitted at” relationship using in our lab.
+
+Case Schema:
+![PartC](TestingResult/PartC_LiJin.png)
+
 ## D Recommender
 
 The `keywords` are derived from the paper title (tokenize & remove stop words) (details in `d_dataprocess`).
