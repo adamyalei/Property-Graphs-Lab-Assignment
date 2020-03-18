@@ -1,0 +1,48 @@
+\\Paper with keyword
+LOAD CSV WITH HEADERS FROM "file:///Users/testing/Desktop/dblp_neo4j-master/out/authors.csv" AS row
+CREATE (paper:Paper{ee:row.ee, journal:row.journal, key:row.key, mdate:row.mdate, pages:row.pages, title:row.title, type:row.type, cite:row.cite, crossref:row.crossref, reviewer:row.reviewer, keyword:row.keyword})
+
+\\Keyword
+LOAD CSV WITH HEADERS FROM 'file:///Users/testing/Desktop/dblp_neo4j-master/out/keywords.csv' AS row
+CREATE (:keyword {keyword:row.keyword})
+
+\\ReviewedBy
+LOAD CSV WITH HEADERS FROM 'file:///Users/testing/Desktop/dblp_neo4j-master/out/papers.csv' AS row
+MATCH (paper:Paper {key:row.key})
+UNWIND SPLIT(row.reviewer,"|") as reviewer
+MATCH (author:Author {name:reviewer})
+MERGE (paper)-[:ReviewedBy]->(author)
+
+\\has_citation
+LOAD CSV WITH HEADERS FROM 'file:///Users/testing/Desktop/dblp_neo4j-master/out/papers.csv' AS row
+UNWIND SPLIT(row.keyword,"|") as keyword
+MATCH (paper:Paper {key:row.key})
+MATCH (usedKeyword:Keyword {keyword:keyword})
+MERGE (paper)-[:hasKeyword]-(usedKeyword)
+
+
+\\Create research community
+MATCH (paper:paper {key:row.key})
+MATCH (usedKeyword:keyword {keyword:keyword})
+MERGE (paper)-[:HasKeyword]-(usedKeyword)
+
+\\Conference/Journal with Community
+MATCH (a:article)-[:published_in]->(conf)
+WITH distinct conf, a, count(a) as noArticle
+MATCH (key:keyword)-[hk:hasKeyword]->(a)
+WITH distinct conf, key, count(hk) as noWithKeywords, noArticle
+WHERE noWithKeywords/noArticle >= 0.9
+CREATE (conf)-[:communityOf]->(key)
+
+
+\\Top 100 papers of the conference/journal
+page.rank(100)
+CREATE (a:article)-[:qualifiedReviewer]->(key:keyword)
+
+\\Identify gurus
+MATCH (a:article)-[:qualifiedReviewer]->(key:keyword)
+WITH a, key
+MATCH (a)-[ab:authored_by]->(b:author)
+WITH a, b, count(ab) as weight
+WHERE weight >= 2
+RETURN a as Gurus

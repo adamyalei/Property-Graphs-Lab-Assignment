@@ -80,5 +80,42 @@ Testing result:
 ## C Graph algorithms
 
 ## D Recommender
+
+The `keywords` are derived from the paper title (tokenize & remove stop words) (details in `d_dataprocess`). 
+
 ### 1 Define research community
-The `keywords` are derived from the paper title (tokenize & remove stop words). 
+
+```
+MATCH (paper:paper {key:row.key})
+MATCH (usedKeyword:keyword {keyword:keyword})
+MERGE (paper)-[:HasKeyword]-(usedKeyword)
+```
+
+### 2 Conference/Journal with Community
+
+```
+MATCH (a:article)-[:published_in]->(conf)
+WITH distinct conf, a, count(a) as noArticle
+MATCH (key:keyword)-[hk:hasKeyword]->(a)
+WITH distinct conf, key, count(hk) as noWithKeywords, noArticle
+WHERE noWithKeywords/noArticle >= 0.9
+CREATE (conf)-[:communityOf]->(key)
+```
+
+### 3 Top 100 papers of the conference/journal
+
+```
+page.rank(100)
+CREATE (a:article)-[:qualifiedReviewer]->(key:keyword)
+```
+
+### 4 Identify gurus
+
+```
+MATCH (a:article)-[:qualifiedReviewer]->(key:keyword)
+WITH a, key
+MATCH (a)-[ab:authored_by]->(b:author)
+WITH a, b, count(ab) as weight
+WHERE weight >= 2
+RETURN a as Gurus
+```
