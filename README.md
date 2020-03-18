@@ -172,6 +172,14 @@ CREATE (conf)-[:communityOf]->(key)
 ```
 page.rank(100)
 CREATE (a:article)-[:qualifiedReviewer]->(key:keyword)
+
+CALL algo.pageRank.stream('Paper', 'Cite', {iterations:10, dampingFactor:0.85})
+YIELD nodeId, score
+WITH algo.getNodeById(nodeId) AS paper,score
+MATCH (book:Book)<-[:PartOf]-(:Proceeding)<-[:PublishedIn]-(paper)  
+ORDER BY score DESC
+RETURN COLLECT(paper.title), score
+Limit 100
 ```
 
 ### 4 Identify gurus
