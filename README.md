@@ -10,12 +10,14 @@ Further changes are performed in Cypher and saved as `PartA.2_LiJin`.
 
 ## A.3 Evolving the graph
 ![ModelDesign](PartA.3.jpeg)
-We create the reviewers for each article/inproceeding based on the community of the corresponding journal/conference (derived from PartB.3). Random 3 reviewers are assigned to each paper.
+We create the `reviewers` property for each article/inproceeding based on the community of the corresponding journal/conference (derived from PartB.3). Random 3 reviewers are assigned to each paper.
+
+For the `affiliation`, given the missing raw data, it is randomly assigned for each author a specific university. 
 
 ## B Querying
 ### 1. H-index
 
-```python
+```
 MATCH ()-[c:citing]->(p:article)-[:authored_by]->(a:author)
 WITH a, p, count(c) as numCit
 ORDER BY numCit
@@ -32,7 +34,7 @@ Testing result:
 ![Query1](TestingResult/Query_1.png)
 
 ### 2. Top 3 for each conference
-```python
+```
 MATCH ()-[c:citing]->(p:confarticle)-[con:published_in]->(conf:conference)
 with distinct p, count(c) as citnum, conf ORDER BY citnum DESC
 with conf, collect(p.title) as array_1, collect(citnum) as array_2
@@ -44,7 +46,7 @@ Testing result:
 
 ### 3. Community for each Conference
 
-```python
+```
 MATCH(conf:proceedings)
 WITH distinct conf.booktitle as confTitle #LIMIT 25
 MATCH (inp:inproceedings{booktitle:confTitle})-[:authored_by]->(a:author)
@@ -59,7 +61,7 @@ Testing result:
 
 ### 4. Impact factor of journals
 
-```python
+```
 MATCH ()-[c:citing]->(a:article)
 with a, count(c) as citnum
 MATCH (j:journal)<-[pi:published_in]-(a:article)
@@ -78,3 +80,5 @@ Testing result:
 ## C Graph algorithms
 
 ## D Recommender
+### 1 Define research community
+The `keywords` are derived from the paper title (tokenize & remove stop words). 
