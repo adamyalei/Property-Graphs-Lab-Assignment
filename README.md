@@ -9,7 +9,7 @@ The original database is parsed through the     `dblp-to-csv` tool available in 
 Further changes are performed in Cypher and saved as `PartA.2_LiJin`.
 
 ## A.3 Evolving the graph
-![ModelDesign](PartA.3.jpeg =250x)
+![ModelDesign](PartA.3.jpeg)
 We create the reviewers for each article/inproceeding based on the community of the corresponding journal/conference (derived from PartB.3). Random 3 reviewers are assigned to each paper.
 
 ## B Querying
@@ -29,7 +29,7 @@ ORDER BY hIndex DESC
 ```
 Testing result:
 
-![Query1](TestingResult/Query 1.png)
+![Query1](TestingResult/Query_1.png)
 
 ### 2. Top 3 for each conference
 ```python
@@ -40,7 +40,7 @@ return distinct conf.booktitle, array_1[..3], array_2[..3]
 ```
 Testing result:
 
-![Query1](TestingResult/Query 2.png)
+![Query1](TestingResult/Query_2.png)
 
 ### 3. Community for each Conference
 
@@ -55,7 +55,7 @@ RETURN confTitle, collect(a.author)
 
 Testing result:
 
-![Query1](TestingResult/Query 3.png)
+![Query1](TestingResult/Query_3.png)
 
 ### 4. Impact factor of journals
 
@@ -73,7 +73,7 @@ order by impact desc, j.journal, year
 
 Testing result:
 
-![Query1](TestingResult/Query 4.png)
+![Query1](TestingResult/Query_4.png)
 
 ## C Graph algorithms
 
