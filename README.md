@@ -13,7 +13,59 @@ Further changes are performed in Cypher and saved as `PartA.2_LiJin`.
 We create the reviewers for each article/inproceeding based on the community of the corresponding journal/conference (derived from PartB.3). Random 3 reviewers are assigned to each paper.
 
 ## B Querying
+### 1. H-index
 
+```python
+MATCH ()-[c:citing]->(p:article)-[:authored_by]->(a:author)
+WITH a, p, count(c) as numCit
+ORDER BY numCit
+WITH a, collect(numCit) AS NumCit
+WITH a, NumCit, range(0, size(NumCit)) AS is
+UNWIND is AS i
+WITH a, NumCit[i] as numCit, i
+WHERE (i+1) < numCit
+RETURN distinct a.author as authorName, max(i) as hIndex
+ORDER BY hIndex DESC
+```
+Testing result:
+![Query1](TestingResult/Query 1.png)
+
+### 2. Top 3 for each conference
+```python
+MATCH ()-[c:citing]->(p:confarticle)-[con:published_in]->(conf:conference)
+with distinct p, count(c) as citnum, conf ORDER BY citnum DESC
+with conf, collect(p.title) as array_1, collect(citnum) as array_2
+return distinct conf.booktitle, array_1[..3], array_2[..3]
+```
+Testing result:
+![Query1](TestingResult/Query 2.png)
+### 3. Community for each Conference
+
+```python
+MATCH(conf:proceedings)
+WITH distinct conf.booktitle as confTitle #LIMIT 25
+MATCH (inp:inproceedings{booktitle:confTitle})-[:authored_by]->(a:author)
+WITH distinct a, collect(distinct inp.key) as inps, confTitle
+WHERE size(inps)>=4
+RETURN confTitle, collect(a.author)
+```
+Testing result:
+![Query1](TestingResult/Query 3.png)
+### 4. Impact factor of journals
+
+```python
+MATCH ()-[c:citing]->(a:article)
+with a, count(c) as citnum
+MATCH (j:journal)<-[pi:published_in]-(a:article)
+with j, a.year as year, count(pi) as pnum, sum(citnum) as cnum
+with j, collect(year) as Year, collect(pnum) as Pnum, collect(cnum) as Cnum
+with j, Year, Pnum, Cnum, range(0, size(Year)-1) AS is
+UNWIND is AS i
+return j.journal, Year[i] as year, Cnum[i]/Pnum[i] as impact
+order by impact desc, j.journal, year
+```
+Testing result:
+![Query1](TestingResult/Query 4.png)
 ## C Graph algorithms
 
 ## D Recommender
