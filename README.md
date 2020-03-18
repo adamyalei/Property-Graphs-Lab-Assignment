@@ -39,6 +39,7 @@ return distinct conf.booktitle, array_1[..3], array_2[..3]
 ```
 Testing result:
 ![Query1](TestingResult/Query 2.png)
+
 ### 3. Community for each Conference
 
 ```python
@@ -49,8 +50,10 @@ WITH distinct a, collect(distinct inp.key) as inps, confTitle
 WHERE size(inps)>=4
 RETURN confTitle, collect(a.author)
 ```
+
 Testing result:
 ![Query1](TestingResult/Query 3.png)
+
 ### 4. Impact factor of journals
 
 ```python
@@ -64,8 +67,10 @@ UNWIND is AS i
 return j.journal, Year[i] as year, Cnum[i]/Pnum[i] as impact
 order by impact desc, j.journal, year
 ```
+
 Testing result:
 ![Query1](TestingResult/Query 4.png)
+
 ## C Graph algorithms
 
 ## D Recommender
