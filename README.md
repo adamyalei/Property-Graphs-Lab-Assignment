@@ -10,9 +10,9 @@ Further changes are performed in Cypher and saved as `PartA.2_LiJin`.
 
 ## A.3 Evolving the graph
 ![ModelDesign](PartA.3.jpeg)
-We create the `reviewers` property for each article/inproceeding based on the community of the corresponding journal/conference (derived from PartB.3). Random 3 reviewers are assigned to each paper.
+We create the `reviewers` property for each article/inproceeding based on the community of the corresponding journal/conference (derived from PartB.3). Random 3 reviewers are assigned to each paper (different from the author). `decision` on the review is also randomly assigned to each reviewer based on a `rand()` function in Cyther.
 
-For the `affiliation`, given the missing raw data, it is randomly assigned for each author a specific university. 
+For the `affiliation`, given the missing raw data, it is randomly assigned for each author a specific university.
 
 ## B Querying
 ### 1. H-index
@@ -81,7 +81,7 @@ Testing result:
 
 ## D Recommender
 
-The `keywords` are derived from the paper title (tokenize & remove stop words) (details in `d_dataprocess`). 
+The `keywords` are derived from the paper title (tokenize & remove stop words) (details in `d_dataprocess`).
 
 ### 1 Define research community
 
