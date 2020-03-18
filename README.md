@@ -108,7 +108,7 @@ Also, calling “alog.pageRank” function with the same nodes and relationship.
 
 Testing result:
 
-![PRresult2](TestingResult/Page_Rank_results2.png)
+![PRresult2](TestingResult/Page_Rank_Results2.png)
 
 ```
 CALL algo.pageRank(
