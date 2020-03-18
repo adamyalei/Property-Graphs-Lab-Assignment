@@ -20,6 +20,13 @@ MATCH (paper:Paper {key:row.key})
 MATCH (usedKeyword:Keyword {keyword:keyword})
 MERGE (paper)-[:has_keyword]-(usedKeyword)
 
+CALL algo.pageRank.stream('Paper', 'Cite', {iterations:10, dampingFactor:0.85})
+YIELD nodeId, score
+WITH algo.getNodeById(nodeId) AS paper,score
+MATCH (book:Book)<-[:PartOf]-(:Proceeding)<-[:PublishedIn]-(paper)  
+ORDER BY score DESC
+RETURN COLLECT(paper.title), score
+Limit 100
 
 \\Create research community
 MATCH (paper:paper {key:row.key})
