@@ -1,0 +1,10 @@
+\\Use the conference community to set reviewers (random 3)
+MATCH(conf:proceedings)
+WITH distinct conf.booktitle as confTitle
+MATCH (inp:inproceedings{booktitle:confTitle})-[:authored_by]->(a:author)
+WITH distinct a, collect(distinct inp.key) as inps, confTitle, rand() as number
+WHERE size(inps)>=4
+WITH confTitle, a.author AS reviewers ORDER BY number
+WITH confTitle, collect(reviewers)[..3] as reviewer
+MATCH (paper:inproceedings{booktitle:confTitle})
+SET paper.reviewer=reviewer

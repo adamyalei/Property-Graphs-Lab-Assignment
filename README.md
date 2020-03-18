@@ -9,6 +9,8 @@ The original database is parsed through the     `dblp-to-csv` tool available in 
 Further changes are performed in Cypher and saved as `PartA.2_LiJin`.
 
 ## A.3 Evolving the graph
+![ModelDesign](PartA.3.jpeg)
+We create the reviewers for each article/inproceeding based on the community of the corresponding journal/conference (derived from PartB.3). Random 3 reviewers are assigned to each paper.
 
 ## B Querying
 
