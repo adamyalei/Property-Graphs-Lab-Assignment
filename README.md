@@ -79,6 +79,71 @@ Testing result:
 
 ## C Graph algorithms
 
+### 1 Case Description
+In order to realize the function of the page rank algorithm, based on the lowest level sub-graph can not only know the details of algorithms more clearly but also reduce the running time of large amounts of the dataset. So, paying attention to specific node and relationship with less amount is a good approach thus “book” and “school” node as well as “submitted at” relationship using in our lab.
+
+Case Schema:
+
+![PartC](TestingResult/PartC_LiJin.png)
+
+### 2 Page Rank Algorithm
+
+PageRank, page rank, also known as page rank or page rank, is a technique for ranking pages based on mutual hyperlinks between pages, named after the founder of Google, Larry Page. Google uses it to reflect the relevance and importance of web pages and is one of the effective indicators for evaluating web page optimization in search engine optimization operations. It determines the rank of a page through the vast network of hyperlink relationships. Google interprets the link from page A to page B as page A votes for page B. Google determines the new rank based on the rank of the voting source (or even the source of the source) and the voting target. Simply put, a high-level page can increase the level of other low-level pages.
+Calling “page rank. stream” with Cypher project in two nodes, we get the result of the “book” node page rank score for its every “book id”.Figure below illustrates that score-0.15 for every “book id” means that every book has little and same incoming link in the relationship of “book” and “school” node due to the book id is an attribute with minimum level with little incoming relationships.
+
+Testing result:
+
+![PRresult1](TestingResult/Page_Rank_results1.png)
+
+```
+CALL algo.pageRank.stream(
+  'MATCH (b:book) WHERE exists( (b)-[:submitted_at]-() ) RETURN id(b) as id',
+  'MATCH (b:book)-[:submitted_at]-(s:school) RETURN id(b) as source, id(s) as target',
+  {graph:'cypher'}
+) YIELD nodeId,score with algo.asNode(nodeId) as node, score order by score desc limit 10
+RETURN node.book, score
+```
+
+Also, calling “alog.pageRank” function with the same nodes and relationship. iterations, loadMillis, computeMillis, writeMillis, dampingFactor, write and writeProperty shows the detail configuration and result of page rank algorithm.
+
+Testing result:
+
+![PRresult2](TestingResult/Page_Rank_Results2.png)
+
+```
+CALL algo.pageRank(
+  'MATCH (p:book) RETURN id(p) as id',
+  'MATCH (p1:book)-[:submitted_at]->(p2:school) RETURN id(p1) as source, id(p2) as target',
+  {graph:'cypher', iterations:1, write: true});
+```
+
+### 3 Betweenness Centrality Algorithm
+It is one of the measures for the centrality of the network graph based on the shortest path. For a fully connected network graph, where any two nodes have at least one shortest path, in a weightless network graph, the shortest path is the sum of the number of edges that the path contains, and in a weighted network graph, the shortest path is the weight of the path containing edges. Sum. The median centrality of each node is the number of times these shortest paths pass through the node. Betweenness Centrality has a wide range of applications in network theory: it represents the degree of interaction between a node and other nodes. For example, in a communication network, a node with higher median centrality has stronger control capabilities in the network, because more information will pass through the node when it is passed. 
+Needless to say, using the same nodes and relationships can identify the difference between centrality algorithm and page rank algorithm thus using school and nodes relationships. Unlike the previous one, based on the Cypher language as below, we check the Centrality of the school name with any kind of relationship in our schema. According to Figure below, the Centrality 0 means there is no shortest path go via in these school name because they are low-level attribute and has no other links. 
+
+Testing result:
+
+![BCresult1](TestingResult/Betweenness_Centrality_result1.png)
+
+```
+CALL algo.betweenness.stream( 'school','',{direction:'out'})
+YIELD nodeId, centrality
+MATCH (school:school) WHERE id(school) = nodeId
+RETURN school.school AS schoolname,centrality
+ORDER BY centrality DESC;
+```
+
+Figure below shows that the details results of algorithm.
+
+Testing result:
+
+![BCresult2](TestingResult/Betweenness_Centrality_result2.png)
+
+```
+CALL algo.betweenness('school','', {direction:'out',write:true, writeProperty:'centrality'})
+YIELD nodes, minCentrality, maxCentrality, sumCentrality, loadMillis, computeMillis, writeMillis;
+```
+
 ## D Recommender
 
 The `keywords` are derived from the paper title (tokenize & remove stop words) (details in `d_dataprocess`).
